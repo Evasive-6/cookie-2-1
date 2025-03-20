@@ -1,15 +1,21 @@
-const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
+const secretKey = 'w87yusgftcxvb nmlpaszxy';
 
 const encrypt = (payload) => {
-  const cipher = crypto.createCipheriv('aes-256-cbc', secretKey, iv);
-  let encrypted = cipher.update(JSON.stringify(payload), 'utf8', 'hex');
-  encrypted += cipher.final('hex');
-  return { token: encrypted, iv: iv.toString('hex') };
+  const token = jwt.sign(payload, secretKey, { expiresIn: '1y' });
+  return token;
 };
 
-const decrypt = (encryptedData) => {
-  const decipher = crypto.createDecipheriv('aes-256-cbc', secretKey, Buffer.from(encryptedData.iv, 'hex'));
-  let decrypted = decipher.update(encryptedData.token, 'hex', 'utf8');
-  decrypted += decipher.final('utf8');
-  return JSON.parse(decrypted);
+const decrypt = (token) => {
+  try {
+    const decodedPayload = jwt.verify(token, secretKey);
+    return decodedPayload;
+  } catch (error) {
+    throw new Error('Invalid or expired token');
+  }
+};
+
+module.exports = {
+  encrypt,
+  decrypt
 };
